@@ -2,38 +2,29 @@ import sys
 
 from setuptools import setup, find_packages
 
-
 install_requires = [
     'boto3>=1.2.1',
     'termcolor>=1.1.0',
     'python-dateutil>=2.4.0'
 ]
 
-
 # as of Python >= 2.7 argparse module is maintained within Python.
-extras_require = {
-    ':python_version in "2.4, 2.5, 2.6"': ['argparse>=1.1.0'],
-}
-
-
-if 'bdist_wheel' not in sys.argv and sys.version_info < (2, 7):
-    install_requires.append('argparse>1.1.0')
-
+if sys.version_info < (2, 7):
+    install_requires.append('argparse>=1.1.0')
 
 setup(
-    name='awslogs',
-    version='0.6.0',
-    url='https://github.com/jorgebastida/awslogs',
+    name='apilogs',
+    version='0.5.0',
+    url='http://github.com/rpgreen/awslogs',
     license='BSD',
-    author='Jorge Bastida',
-    author_email='me@jorgebastida.com',
-    description='awslogs is a simple command line tool to read aws cloudwatch logs.',
-    long_description='awslogs is a simple command line tool to read aws cloudwatch logs.',
+    author='Ryan Green',
+    author_email='ryang@ryang.ca',
+    description='apilogs is a simple command line tool to read aws cloudwatch logs for serverless APIs.',
+    long_description='apilogs is a simple command line tool to read aws cloudwatch logs for serverless APIs.',
     keywords="aws logs cloudwatch",
     packages=find_packages(),
     platforms='any',
     install_requires=install_requires,
-    extras_require=extras_require,
     test_suite='tests',
     classifiers=[
         'Programming Language :: Python :: 3',
@@ -47,7 +38,7 @@ setup(
     ],
     entry_points={
         'console_scripts': [
-            'awslogs = awslogs.bin:main',
+            'apilogs = apilogs.bin:main',
         ]
     },
     zip_safe=False

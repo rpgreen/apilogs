@@ -1,27 +1,27 @@
-awslogs
+apilogs
 =======
 
-.. image:: https://badge.fury.io/py/awslogs.png
-  :target: http://badge.fury.io/py/awslogs
+``apilogs`` is a fork of the excellent `awslogs <https://github.com/jorgebastida/awslogs>`_ project with specific customizations suited to querying and streaming logs for
+Serverless APIs using `Amazon API Gateway <https://aws.amazon.com/api-gateway/>`_ and `AWS Lambda <https://aws.amazon.com/lambda/>`_.
 
-.. image:: https://travis-ci.org/jorgebastida/awslogs.png?branch=master
-    :target: https://travis-ci.org/jorgebastida/awslogs
+`apilogs` will automatically aggregate log events from all log streams for your API Gateway API as well as all Lambda function log streams attached to your API.
 
-.. image:: https://coveralls.io/repos/jorgebastida/awslogs/badge.svg
-  :target: https://coveralls.io/r/jorgebastida/awslogs
+Installation/Running
+-------
+git clone https://github.com/rpgreen/awslogs.git
 
+i.e. stream logs for your Serverless API:
+    $ python -m apilogs.bin get --api-id xyz123 --stage prod --watch
 
-``awslogs`` is a simple command line tool for querying groups, streams and events from `Amazon CloudWatch <http://aws.amazon.com/cloudwatch/>`_ logs.
+Grep for errors one hour ago using credentials from AWS CLI profile "myprofile":
+    $ python -m apilogs.bin get --api-id xyz123 --stage test2 --profile myprofile --aws-region us-east-1 --start='2h ago' --end='1h ago' | grep "ERROR"
 
-One of the most powerful features is to query events from several streams and consume them (ordered) in pseudo-realtime using your favourite tools such as ``grep``::
-
-    $ awslogs get /var/log/syslog ip-10-1.* --start='2h ago' | grep ERROR
 
 
 Features
 --------
 
-* Aggregate logs from accross streams.
+* Aggregate logs from across streams.
 
   - Aggregate all streams in a group.
   - Aggregate streams matching a regular expression.
@@ -59,19 +59,6 @@ Example
 Running: ``awslogs get /var/logs/syslog ALL -s1d`` will return you events from any ``stream`` in the ``/var/logs/syslog`` group generated in the last day.
 
 .. image:: https://github.com/jorgebastida/awslogs/raw/master/media/screenshot.png
-
-
-Installation
-------------
-
-You can easily install ``awslogs`` using ``pip``::
-
-  $ pip install awslogs
-
-If you are on OSX El Capitan, use the following (Why? Check Donald Stufft's comment `here <https://github.com/pypa/pip/issues/3165#issuecomment-145856429>`_) ::
-
-  $ pip install awslogs --ignore-installed six
-
 
 
 Options
@@ -121,7 +108,7 @@ While querying for logs you can filter events by ``--start`` ``-s`` and ``--end`
   - ``--start='1/1/2015'`` Events generated after midnight on the 1st of January 2015.
   - ``--start='Sat Oct 11 17:13:46 UTC 2003'`` You can use detailed dates too.
 
-  Note, for time parsing awslogs uses `dateutil <https://dateutil.readthedocs.io/en/latest/>`_.
+  Note, for time parsing awslogs uses `dateutil <https://dateutil.readthedocs.org/en/latest/>`_.
 
 * All previous examples are applicable for  ``--end`` ``-e`` too.
 
@@ -156,7 +143,7 @@ Helpful Links
 -------------
 
 * http://aws.amazon.com/cloudwatch/
-* https://boto.readthedocs.io/en/latest/ref/logs.html
+* http://boto.readthedocs.org/en/latest/ref/logs.html
 * http://docs.aws.amazon.com/AmazonCloudWatch/latest/DeveloperGuide/cloudwatch_limits.html
 
 How to provide AWS credentials to awslogs
