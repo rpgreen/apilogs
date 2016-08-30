@@ -4,7 +4,7 @@ apilogs
 ``apilogs`` is a fork of the excellent `awslogs <https://github.com/jorgebastida/awslogs>`_ project with specific customizations suited to querying and streaming logs for
 Serverless APIs using `Amazon API Gateway <https://aws.amazon.com/api-gateway/>`_ and `AWS Lambda <https://aws.amazon.com/lambda/>`_.
 
-`apilogs` will automatically aggregate log events from all log streams for your API Gateway API as well as all Lambda function log streams attached to your API.
+Simply provide an API Gateway API ID and Stage name and `apilogs` will automatically aggregate log events from all log streams for your API Gateway API as well as all Lambda function log streams attached to your API.
 
 Installation/Running
 -------
@@ -29,15 +29,15 @@ Features
 * Colored output.
 * List existing groups
 
-  - ``$ awslogs groups``
+  - ``$ apilogs groups``
 
 * List existing streams
 
-  - ``$ awslogs streams /var/log/syslog``
+  - ``$ apilogs streams /var/log/syslog``
 
 * Watch logs as they are created
 
-  - ``$ awslogs get /var/log/syslog ALL --watch``
+  - ``$ apilogs get /var/log/syslog ALL --watch``
 
 * Human-friendly time filtering:
 
@@ -56,7 +56,7 @@ Features
 Example
 -------
 
-Running: ``awslogs get /var/logs/syslog ALL -s1d`` will return you events from any ``stream`` in the ``/var/logs/syslog`` group generated in the last day.
+Running: ``apilogs get /var/logs/syslog ALL -s1d`` will return you events from any ``stream`` in the ``/var/logs/syslog`` group generated in the last day.
 
 .. image:: https://github.com/jorgebastida/awslogs/raw/master/media/screenshot.png
 
@@ -64,9 +64,9 @@ Running: ``awslogs get /var/logs/syslog ALL -s1d`` will return you events from a
 Options
 -------
 
-* ``awslogs groups``: List existing groups
-* ``awslogs streams GROUP``: List existing streams withing ``GROUP``
-* ``awslogs get GROUP [STREAM_EXPRESSION]``: Get logs matching ``STREAM_EXPRESSION`` in ``GROUP``.
+* ``apilogs groups``: List existing groups
+* ``apilogs streams GROUP``: List existing streams withing ``GROUP``
+* ``apilogs get GROUP [STREAM_EXPRESSION]``: Get logs matching ``STREAM_EXPRESSION`` in ``GROUP``.
 
   - Expressions can be regular expressions or the wildcard ``ALL`` if you want any and don't want to type ``.*``.
 
@@ -120,7 +120,7 @@ This is helpful if you know precisely what you are looking for, and don't want t
 
 For example, if you only want to download only the report events from a Lambda stream you can run::
 
-  $ awslogs get my_lambda_group --filter-pattern="[r=REPORT,...]"
+  $ apilogs get my_lambda_group --filter-pattern="[r=REPORT,...]"
 
 
 Full documentation of how to write patterns: http://docs.aws.amazon.com/AmazonCloudWatch/latest/DeveloperGuide/FilterAndPatternSyntax.html
@@ -146,10 +146,10 @@ Helpful Links
 * http://boto.readthedocs.org/en/latest/ref/logs.html
 * http://docs.aws.amazon.com/AmazonCloudWatch/latest/DeveloperGuide/cloudwatch_limits.html
 
-How to provide AWS credentials to awslogs
+How to provide AWS credentials to apilogs
 ------------------------------------------
 
 Although, the most straightforward thing to do might be use ``--aws-access-key-id`` and ``--aws-secret-access-key`` or ``--profile``, this will eventually become a pain in the ass.
 
-* If you only have one ``AWS`` account, my personal recommendation would be to configure `aws-cli <http://aws.amazon.com/cli/>`_. ``awslogs`` will use those credentials if available.
-* If you have multiple ``AWS`` accounts or you don't want to setup ``aws-cli``, I would recommend you to use `envdir <https://pypi.python.org/pypi/envdir>`_ in order to make ``AWS_ACCESS_KEY_ID`` and ``AWS_SECRET_ACCESS_KEY`` available to ``awslogs``.
+* If you only have one ``AWS`` account, my personal recommendation would be to configure `aws-cli <http://aws.amazon.com/cli/>`_. ``apilogs`` will use those credentials if available.
+* If you have multiple ``AWS`` accounts or you don't want to setup ``aws-cli``, I would recommend you to use `envdir <https://pypi.python.org/pypi/envdir>`_ in order to make ``AWS_ACCESS_KEY_ID`` and ``AWS_SECRET_ACCESS_KEY`` available to ``apilogs``.
