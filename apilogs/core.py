@@ -82,7 +82,7 @@ class AWSLogs(object):
                 yield stream
 
     def get_lambda_function_names(self, apiId, stage):
-        # todo: get functions from actual deployment. how to send embed=apisummary parameter?
+        # todo: get functions from actual deployment. SDK needs to support embed=apisummary parameter
         # stage = self.apigClient.get_stage(restApiId=apiId, stageName=stage)
         # dep_id = stage['deploymentId']
         # dep = self.apigClient.get_deployment(restApiId=apiId, deploymentId=dep_id)
