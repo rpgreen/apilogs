@@ -8,7 +8,7 @@ Simply provide an API Gateway API ID and Stage name and `apilogs` will automatic
 
 Installation/Running
 -------
-git clone https://github.com/rpgreen/awslogs.git
+git clone https://github.com/rpgreen/apilogs.git
 
 i.e. stream logs for your Serverless API:
     $ python -m apilogs.bin get --api-id xyz123 --stage prod --watch
