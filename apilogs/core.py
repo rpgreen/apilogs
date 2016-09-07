@@ -110,7 +110,6 @@ class AWSLogs(object):
     def list_logs(self):
         streams = []
 
-        # print self.log_stream_name
         if self.log_stream_name != self.ALL_WILDCARD:
             streams = list(self._get_streams_from_pattern(self.log_group_name, self.log_stream_name))
 
@@ -128,8 +127,82 @@ class AWSLogs(object):
 
         queue, exit = Queue(), Event()
 
-        # Note: filter_log_events paginator is broken
-        # ! Error during pagination: The same next token was received twice
+        def update_next_token(response, kwargs):
+            group = kwargs['logGroupName']
+
+            if 'nextToken' in response:
+                next = response['nextToken']
+    
+                self.next_tokens[group] = next
+
+                #print "Updated tokens"
+                #print self.next_tokens
+            else:
+                if group in self.next_tokens:
+                    del self.next_tokens[group]
+
+                if self.watch:
+                    time.sleep(0.2)
+                else:
+                    queue.put(None)
+                    return
+
+        ## todo: remove shared kwargs
+        def list_lambda_logs(allevents, kwargs):
+            # add events from lambda function streams
+            fxns = self.get_lambda_function_names(self.api_id, self.stage)
+            for fxn in fxns:
+                lambda_group = "/aws/lambda/" + fxn
+                kwargs['logGroupName'] = lambda_group
+    
+                if lambda_group in self.next_tokens:
+                    kwargs['nextToken'] = self.next_tokens[lambda_group]
+                else:
+                    if 'nextToken' in kwargs:
+                        del kwargs['nextToken']
+
+                lambdaresponse = filter_log_events(**kwargs)
+                events = lambdaresponse.get('events', [])
+                for event in events:
+                    event['group_name'] = lambda_group
+                    allevents.append(event)
+                update_next_token(lambdaresponse, kwargs)
+                return allevents
+
+        ## todo: remove shared kwargs
+        def list_apigateway_logs(allevents, kwargs):
+            # add events from API Gateway streams
+            kwargs['logGroupName'] = self.log_group_name
+            if self.log_group_name in self.next_tokens:
+                kwargs['nextToken'] = self.next_tokens[self.log_group_name]
+            else:
+                if 'nextToken' in kwargs:
+                    del kwargs['nextToken']
+
+            apigresponse = filter_log_events(**kwargs)
+            events = apigresponse.get('events', [])
+            for event in events:
+                event['group_name'] = self.log_group_name
+                allevents.append(event)
+            update_next_token(apigresponse, kwargs)
+            return allevents
+
+        def filter_log_events(**kwargs):
+            try:
+                resp = self.client.filter_log_events(**kwargs)
+
+                if 'nextToken' in resp:
+                    group = kwargs['logGroupName']
+                    next = resp['nextToken']
+                    #print "Resp: Group: " + group + " nextToken: " + next
+
+                #print resp
+
+                return resp
+            except Exception as e:
+                print "Caught error from CloudWatch: {0}".format(e)
+                raise
+
 
         def consumer():
             while not exit.is_set():
@@ -204,58 +277,19 @@ class AWSLogs(object):
                 kwargs['filterPattern'] = self.filter_pattern
 
             while not exit.is_set():
-                # add events from API Gateway streams
-                kwargs['logGroupName'] = self.log_group_name
-                if self.log_group_name in self.next_tokens:
-                    kwargs['nextToken'] = self.next_tokens[self.log_group_name]
-
-                response = self.client.filter_log_events(**kwargs)
-                # print response
-                allevents = response.get('events', [])
-                # print allevents
-                for event in allevents:
-                    event['group_name'] = self.log_group_name
-                    #print event
-
-                # add events from lambda function streams
-                fxns = self.get_lambda_function_names(self.api_id, self.stage)
-                for fxn in fxns:
-                    lambda_group = "/aws/lambda/" + fxn
-                    kwargs['logGroupName'] = lambda_group
-
-                    if lambda_group in self.next_tokens:
-                        kwargs['nextToken'] = self.next_tokens[lambda_group]
-
-                    response = self.client.filter_log_events(**kwargs)
-                    events = response.get('events', [])
-                    for event in events:
-                        event['group_name'] = lambda_group
-                        allevents.append(event)
-                    #print events
+                allevents = []
+                
+                list_apigateway_logs(allevents, kwargs)
+                list_lambda_logs(allevents, kwargs)
 
                 sorted(allevents, key=itemgetter('timestamp'))
 
                 for event in allevents:
-                    #print event
                     if event['eventId'] not in interleaving_sanity:
                         interleaving_sanity.append(event['eventId'])
                         queue.put(event)
 
                 #print response
-                if 'nextToken' in response:
-                    #kwargs['nextToken'] = response['nextToken']
-                    group = response.get('events', [])[0]['group_name']
-                    nextToken = response['nextToken']
-
-                    #print "*** Next Token: " + group + " : " + nextToken
-
-                    self.next_tokens[group] = nextToken
-                else:
-                    if self.watch:
-                        time.sleep(0.2)
-                    else:
-                        queue.put(None)
-                        break
 
         g = Thread(target=generator)
         g.start()
