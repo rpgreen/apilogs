@@ -93,19 +93,19 @@ class AWSLogs(object):
 
         # note: this currently returns the lambda functions from the head revision, which may be different than the deployed version
         for resource in resources:
-            methods = resource['resourceMethods']
-            for method in methods:
-                integ = self.apigClient.get_integration(restApiId=apiId,
-                                                resourceId=resource['id'],
-                                                httpMethod=method)
-                if integ['type'] == "AWS" and "lambda:path/2015-03-31/functions" in integ['uri']:
-                    uri = integ['uri']
-                    start = uri.find(":function:")
-                    end = uri.find("/invocations")
-                    name = uri[start + 10:end]
-                    names.append(name)
+            if 'resourceMethods' in resource:
+                methods = resource['resourceMethods']
+                for method in methods:
+                    integ = self.apigClient.get_integration(restApiId=apiId,
+                                                    resourceId=resource['id'],
+                                                    httpMethod=method)
+                    if integ['type'] == "AWS" and "lambda:path/2015-03-31/functions" in integ['uri']:
+                        uri = integ['uri']
+                        start = uri.find(":function:")
+                        end = uri.find("/invocations")
+                        name = uri[start + 10:end]
+                        names.append(name)
         return names
-
 
     def list_logs(self):
         streams = []

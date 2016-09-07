@@ -17,6 +17,7 @@ Grep for errors one hour ago using credentials from AWS CLI profile "myprofile":
     $ python -m apilogs.bin get --api-id xyz123 --stage test2 --profile myprofile --aws-region us-east-1 --start='2h ago' --end='1h ago' | grep "ERROR"
 
 
+.. image:: https://github.com/rpgreen/awslogs/blob/master/media/apilogs-screenshot.png
 
 Features
 --------
@@ -51,15 +52,6 @@ Features
 
   - ``--timestamp`` Prints the creation timestamp of each event.
   - ``--ingestion-time`` Prints the ingestion time of each event.
-
-
-Example
--------
-
-Running: ``apilogs get /var/logs/syslog ALL -s1d`` will return you events from any ``stream`` in the ``/var/logs/syslog`` group generated in the last day.
-
-.. image:: https://github.com/rpgreen/awslogs/blob/master/media/apilogs-screenshot.png
-
 
 Options
 -------
