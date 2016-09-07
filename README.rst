@@ -17,7 +17,7 @@ Grep for errors one hour ago using credentials from AWS CLI profile "myprofile":
     $ python -m apilogs.bin get --api-id xyz123 --stage test2 --profile myprofile --aws-region us-east-1 --start='2h ago' --end='1h ago' | grep "ERROR"
 
 
-.. image:: https://github.com/rpgreen/awslogs/blob/master/media/apilogs-screenshot.png
+.. image:: https://github.com/rpgreen/apilogs/blob/master/media/apilogs-screenshot.png
 
 Features
 --------
