@@ -99,7 +99,7 @@ class AWSLogs(object):
                     integ = self.apigClient.get_integration(restApiId=apiId,
                                                     resourceId=resource['id'],
                                                     httpMethod=method)
-                    if integ['type'] == "AWS" and "lambda:path/2015-03-31/functions" in integ['uri']:
+                    if (integ['type'] == "AWS" or integ['type'] == "AWS_PROXY") and "lambda:path/2015-03-31/functions" in integ['uri']:
                         uri = integ['uri']
                         start = uri.find(":function:")
                         end = uri.find("/invocations")
@@ -152,7 +152,7 @@ class AWSLogs(object):
             # add events from lambda function streams
             fxns = self.get_lambda_function_names(self.api_id, self.stage)
             for fxn in fxns:
-                lambda_group = "/aws/lambda/" + fxn
+                lambda_group = ("/aws/lambda/" + fxn).split(':')[0]
                 kwargs['logGroupName'] = lambda_group
     
                 if lambda_group in self.next_tokens:
@@ -179,7 +179,13 @@ class AWSLogs(object):
                 if 'nextToken' in kwargs:
                     del kwargs['nextToken']
 
-            apigresponse = filter_log_events(**kwargs)
+            try:
+                apigresponse = filter_log_events(**kwargs)
+            except Exception as e:
+                print "Error fetching logs for API {0}. Please ensure logging is enabled for this API and the API is deployed. " \
+                      "See http://docs.aws.amazon.com/apigateway/latest/developerguide/how-to-stage-settings.html: {1}".format(self.api_id, e)
+                raise
+
             events = apigresponse.get('events', [])
             for event in events:
                 event['group_name'] = self.log_group_name
