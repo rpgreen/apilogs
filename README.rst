@@ -8,13 +8,13 @@ Simply provide an API Gateway API ID and Stage name and `apilogs` will automatic
 
 Installation/Running
 -------
-git clone https://github.com/rpgreen/apilogs.git
+$ pip install apilogs
 
 i.e. stream logs for your Serverless API:
-    $ python -m apilogs.bin get --api-id xyz123 --stage prod --watch
+    $ apilogs get --api-id xyz123 --stage prod --watch
 
 Grep for errors one hour ago using credentials from AWS CLI profile "myprofile":
-    $ python -m apilogs.bin get --api-id xyz123 --stage test2 --profile myprofile --aws-region us-east-1 --start='2h ago' --end='1h ago' | grep "ERROR"
+    $ apilogs get --api-id xyz123 --stage test2 --profile myprofile --aws-region us-east-1 --start='2h ago' --end='1h ago' | grep "ERROR"
 
 
 .. image:: https://github.com/rpgreen/apilogs/blob/master/media/apilogs-screenshot.png
