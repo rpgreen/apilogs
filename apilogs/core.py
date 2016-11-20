@@ -143,9 +143,6 @@ class AWSLogs(object):
 
                 if self.watch:
                     time.sleep(0.2)
-                else:
-                    queue.put(None)
-                    return
 
         ## todo: remove shared kwargs
         def list_lambda_logs(allevents, kwargs):
@@ -160,13 +157,15 @@ class AWSLogs(object):
                 else:
                     if 'nextToken' in kwargs:
                         del kwargs['nextToken']
-
-                lambdaresponse = filter_log_events(**kwargs)
-                events = lambdaresponse.get('events', [])
-                for event in events:
-                    event['group_name'] = lambda_group
-                    allevents.append(event)
-                update_next_token(lambdaresponse, kwargs)
+                try:
+                    lambda_response = filter_log_events(**kwargs)
+                    events = lambda_response.get('events', [])
+                    for event in events:
+                        event['group_name'] = lambda_group
+                        allevents.append(event)
+                    update_next_token(lambda_response, kwargs)
+                except Exception as e:
+                    print "Error fetching logs for Lambda function {0} with group {1}. This function may need to be invoked.".format(fxn, lambda_group, e)
                 return allevents
 
         ## todo: remove shared kwargs
@@ -295,7 +294,9 @@ class AWSLogs(object):
                         interleaving_sanity.append(event['eventId'])
                         queue.put(event)
 
-                #print response
+                # Send the exit signal if no more pages and not in watch mode
+                if not self.watch and not self.next_tokens:
+                    queue.put(None)
 
         g = Thread(target=generator)
         g.start()
