@@ -14,7 +14,7 @@ if sys.version_info < (2, 7):
 
 setup(
     name='apilogs',
-    version='1.0',
+    version='1.1',
     url='http://github.com/rpgreen/apilogs',
     license='BSD',
     author='Ryan Green',
