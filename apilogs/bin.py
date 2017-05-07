@@ -208,12 +208,12 @@ def main(argv=None):
 
 
 def configure_logging(verbosity):
-    max_verbosity = verbosity > 3
-    verbosity = 3 if max_verbosity else verbosity
+    is_max_verbosity = verbosity > 3
+    verbosity = 3 if is_max_verbosity else verbosity
     level = {0: 'ERROR', 1: 'WARNING', 2: 'INFO', 3: 'DEBUG'}[verbosity]
     fmt = '%(asctime)s %(name)s:%(lineno)s %(levelname)s: %(message)s'
     logging.basicConfig(level=level, format=fmt)
-    if not max_verbosity:
+    if not is_max_verbosity:
         external_loggers = ['botocore']
         for name in external_loggers:
             logger = logging.getLogger(name)
