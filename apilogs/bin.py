@@ -5,6 +5,7 @@ import codecs
 import argparse
 
 import boto3
+import logging
 from botocore.client import ClientError
 from termcolor import colored
 
@@ -13,7 +14,6 @@ from .core import AWSLogs
 from ._version import __version__
 
 def main(argv=None):
-
     if sys.version_info < (3, 0):
         sys.stdout = codecs.getwriter(locale.getpreferredencoding())(sys.stdout)
 
@@ -22,6 +22,8 @@ def main(argv=None):
     parser = argparse.ArgumentParser(usage=("%(prog)s [ get | groups | streams ]"))
     parser.add_argument("--version", action="version",
                         version="%(prog)s " + __version__)
+    parser.add_argument("-v", action="count", default=0,
+                        help="increase verbosity (-vvvv for maximum)")
 
     def add_common_arguments(parser):
         parser.add_argument("--aws-access-key-id",
@@ -144,6 +146,8 @@ def main(argv=None):
     # Parse input
     options, args = parser.parse_known_args(argv)
 
+    configure_logging(options.v)
+
     if hasattr(options, 'api_id'):
         # build API Gateway log group name
         options.log_group_name = "API-Gateway-Execution-Logs_" + options.api_id + "/" + options.stage
@@ -201,6 +205,19 @@ def main(argv=None):
         return 1
 
     return 0
+
+
+def configure_logging(verbosity):
+    is_max_verbosity = verbosity > 3
+    verbosity = 3 if is_max_verbosity else verbosity
+    level = {0: 'ERROR', 1: 'WARNING', 2: 'INFO', 3: 'DEBUG'}[verbosity]
+    fmt = '%(asctime)s %(name)s:%(lineno)s %(levelname)s: %(message)s'
+    logging.basicConfig(level=level, format=fmt)
+    if not is_max_verbosity:
+        external_loggers = ['botocore']
+        for name in external_loggers:
+            logger = logging.getLogger(name)
+            logger.setLevel(logging.ERROR)
 
 if __name__ == '__main__':
     main()

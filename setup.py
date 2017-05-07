@@ -5,7 +5,8 @@ from setuptools import setup, find_packages
 install_requires = [
     'boto3>=1.2.1',
     'termcolor>=1.1.0',
-    'python-dateutil>=2.4.0'
+    'python-dateutil>=2.4.0',
+    'awslogs',
 ]
 
 # as of Python >= 2.7 argparse module is maintained within Python.
