@@ -1,3 +1,4 @@
+import logging
 import re
 import sys
 import os
@@ -23,6 +24,7 @@ def milis2iso(milis):
     res = datetime.utcfromtimestamp(milis/1000.0).isoformat()
     return (res + ".000")[:23] + 'Z'
 
+log = logging.getLogger(__name__)
 
 class AWSLogs(object):
 
@@ -132,7 +134,7 @@ class AWSLogs(object):
 
             if 'nextToken' in response:
                 next = response['nextToken']
-    
+
                 self.next_tokens[group] = next
 
                 #print "Updated tokens"
@@ -151,7 +153,7 @@ class AWSLogs(object):
             for fxn in fxns:
                 lambda_group = ("/aws/lambda/" + fxn).split(':')[0]
                 kwargs['logGroupName'] = lambda_group
-    
+
                 if lambda_group in self.next_tokens:
                     kwargs['nextToken'] = self.next_tokens[lambda_group]
                 else:
@@ -165,7 +167,9 @@ class AWSLogs(object):
                         allevents.append(event)
                     update_next_token(lambda_response, kwargs)
                 except Exception as e:
-                    print "Error fetching logs for Lambda function {0} with group {1}. This function may need to be invoked.".format(fxn, lambda_group, e)
+                    log.warning("Error fetching logs for Lambda function {0}"
+                                " with group {1}. This function may need to be"
+                                " invoked.".format(fxn, lambda_group, e))
                 return allevents
 
         ## todo: remove shared kwargs
@@ -181,8 +185,12 @@ class AWSLogs(object):
             try:
                 apigresponse = filter_log_events(**kwargs)
             except Exception as e:
-                print "Error fetching logs for API {0}. Please ensure logging is enabled for this API and the API is deployed. " \
-                      "See http://docs.aws.amazon.com/apigateway/latest/developerguide/how-to-stage-settings.html: {1}".format(self.api_id, e)
+                log.error(
+                    "Error fetching logs for API {0}. Please ensure logging "
+                    "is enabled for this API and the API is deployed. See "
+                    "http://docs.aws.amazon.com/apigateway/latest/"
+                    "developerguide/how-to-stage-settings.html: {1}"
+                        .format(self.api_id, e))
                 raise
 
             events = apigresponse.get('events', [])
@@ -205,7 +213,7 @@ class AWSLogs(object):
 
                 return resp
             except Exception as e:
-                print "Caught error from CloudWatch: {0}".format(e)
+                log.error("Caught error from CloudWatch: {0}".format(e))
                 raise
 
 
@@ -283,7 +291,7 @@ class AWSLogs(object):
 
             while not exit.is_set():
                 allevents = []
-                
+
                 list_apigateway_logs(allevents, kwargs)
                 list_lambda_logs(allevents, kwargs)
 

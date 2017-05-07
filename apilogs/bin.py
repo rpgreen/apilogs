@@ -5,6 +5,7 @@ import codecs
 import argparse
 
 import boto3
+import logging
 from botocore.client import ClientError
 from termcolor import colored
 
@@ -13,6 +14,8 @@ from .core import AWSLogs
 from ._version import __version__
 
 def main(argv=None):
+    fmt = '%(asctime)s %(funcName)s:%(lineno)s %(levelname)s: %(message)s'
+    logging.basicConfig(level=logging.DEBUG, format=fmt)
 
     if sys.version_info < (3, 0):
         sys.stdout = codecs.getwriter(locale.getpreferredencoding())(sys.stdout)
