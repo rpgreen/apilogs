@@ -208,14 +208,7 @@ def main(argv=None):
 
 
 def configure_logging(verbosity):
-    level = logging.getLevelName(
-        {
-            0: 'ERROR',
-            1: 'WARNING',
-            2: 'INFO',
-            3: 'DEBUG'
-        }.get(verbosity, 'CRITICAL')
-    )
+    level = {0: 'ERROR', 1: 'WARNING', 2: 'INFO', 3: 'DEBUG'}[verbosity]
     fmt = '%(asctime)s %(funcName)s:%(lineno)s %(levelname)s: %(message)s'
     logging.basicConfig(level=level, format=fmt)
 
