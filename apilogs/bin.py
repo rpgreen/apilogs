@@ -23,7 +23,7 @@ def main(argv=None):
     parser.add_argument("--version", action="version",
                         version="%(prog)s " + __version__)
     parser.add_argument("-v", action="count", default=0,
-                        help="increase verbosity (-vvv for maximum verbosity)")
+                        help="increase verbosity (-vvvv for maximum)")
 
     def add_common_arguments(parser):
         parser.add_argument("--aws-access-key-id",
@@ -208,10 +208,16 @@ def main(argv=None):
 
 
 def configure_logging(verbosity):
+    max_verbosity = verbosity > 3
+    verbosity = 3 if max_verbosity else verbosity
     level = {0: 'ERROR', 1: 'WARNING', 2: 'INFO', 3: 'DEBUG'}[verbosity]
-    fmt = '%(asctime)s %(funcName)s:%(lineno)s %(levelname)s: %(message)s'
+    fmt = '%(asctime)s %(name)s:%(lineno)s %(levelname)s: %(message)s'
     logging.basicConfig(level=level, format=fmt)
-
+    if not max_verbosity:
+        external_loggers = ['botocore']
+        for name in external_loggers:
+            logger = logging.getLogger(name)
+            logger.setLevel(logging.ERROR)
 
 if __name__ == '__main__':
     main()
