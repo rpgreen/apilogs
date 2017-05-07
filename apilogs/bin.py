@@ -23,7 +23,7 @@ def main(argv=None):
     parser.add_argument("--version", action="version",
                         version="%(prog)s " + __version__)
     parser.add_argument("-v", action="count", default=0,
-                        help="increase verbosity")
+                        help="increase verbosity (-vvv for maximum verbosity)")
 
     def add_common_arguments(parser):
         parser.add_argument("--aws-access-key-id",
