@@ -170,7 +170,7 @@ class AWSLogs(object):
                     log.warning("Error fetching logs for Lambda function {0}"
                                 " with group {1}. This function may need to be"
                                 " invoked.".format(fxn, lambda_group, e))
-                return allevents
+            return allevents
 
         ## todo: remove shared kwargs
         def list_apigateway_logs(allevents, kwargs):
