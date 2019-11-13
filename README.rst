@@ -41,6 +41,11 @@ Features
 
   - ``$ apilogs get /var/log/syslog ALL --watch``
 
+
+* Truncate logs as they are shown
+
+  - ``$ apilogs get /var/log/syslog ALL --no-wrap``
+
 * Human-friendly time filtering:
 
   - ``--start='23/1/2015 14:23'``
