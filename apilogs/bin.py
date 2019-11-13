@@ -120,6 +120,12 @@ def main(argv=None):
                             action='store_true',
                             dest='output_ingestion_time_enabled',
                             help="Add ingestion time to the output")
+   
+    get_parser.add_argument("-H",
+                            "--highlight",
+                            action='append',
+                            dest='highlight',
+                            help="Highlight text found in event's message.")
 
     add_date_range_arguments(get_parser)
 

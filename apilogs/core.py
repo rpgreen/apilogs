@@ -46,6 +46,7 @@ class AWSLogs(object):
         self.stage = kwargs.get('stage')
         self.log_stream_name = kwargs.get('log_stream_name')
         self.filter_pattern = kwargs.get('filter_pattern')
+        self.highlight = kwargs.get('highlight')
         self.watch = kwargs.get('watch')
         self.color_enabled = kwargs.get('color_enabled')
         self.output_stream_enabled = kwargs.get('output_stream_enabled')
@@ -225,6 +226,12 @@ class AWSLogs(object):
                     exit.set()
                     break
 
+                # Strip any tail line feeds
+                message = event['message'].rstrip("\r\n")
+                if self.highlight:
+                    for value in self.highlight:
+                        if value and not value.isspace():
+                            message = message.replace(value, self.color(value, 'blue', 'on_yellow'))
                 output = []
                 if self.output_group_enabled:
                     output.append(
@@ -255,7 +262,8 @@ class AWSLogs(object):
                             'blue'
                         )
                     )
-                output.append(event['message'])
+
+                output.append(message)
                 print(' '.join(output))
                 sys.stdout.flush()
 
@@ -355,10 +363,10 @@ class AWSLogs(object):
                         min(stream['lastEventTimestamp'], window_end):
                     yield stream['logStreamName']
 
-    def color(self, text, color):
+    def color(self, text, color, on_color=None):
         """Returns coloured version of ``text`` if ``color_enabled``."""
         if self.color_enabled:
-            return colored(text, color)
+            return colored(text, color, on_color)
         return text
 
     def parse_datetime(self, datetime_text):

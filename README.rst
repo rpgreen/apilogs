@@ -28,6 +28,7 @@ Features
   - Aggregate streams matching a regular expression.
 
 * Colored output.
+  - Highlight found text in logs
 * List existing groups
 
   - ``$ apilogs groups``
