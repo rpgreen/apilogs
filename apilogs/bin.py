@@ -98,7 +98,7 @@ def main(argv=None):
                             action='store_true',
                             dest='watch',
                             help="Query for new log lines constantly")
-
+     
     get_parser.add_argument("-G",
                             "--no-group",
                             action='store_false',
@@ -120,7 +120,13 @@ def main(argv=None):
                             action='store_true',
                             dest='output_ingestion_time_enabled',
                             help="Add ingestion time to the output")
-   
+
+    get_parser.add_argument("-T",
+                            "--no-wrap",
+                            action='store_true',
+                            dest='truncate',
+                            help="Do not wrap log lines in output, truncate to length of line.")
+    
     get_parser.add_argument("-H",
                             "--highlight",
                             action='append',

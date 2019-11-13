@@ -28,7 +28,9 @@ Features
   - Aggregate streams matching a regular expression.
 
 * Colored output.
+
   - Highlight found text in logs
+
 * List existing groups
 
   - ``$ apilogs groups``
@@ -40,6 +42,11 @@ Features
 * Watch logs as they are created
 
   - ``$ apilogs get /var/log/syslog ALL --watch``
+
+
+* Truncate logs as they are shown
+
+  - ``$ apilogs get /var/log/syslog ALL --no-wrap``
 
 * Human-friendly time filtering:
 

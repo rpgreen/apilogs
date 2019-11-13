@@ -48,6 +48,7 @@ class AWSLogs(object):
         self.filter_pattern = kwargs.get('filter_pattern')
         self.highlight = kwargs.get('highlight')
         self.watch = kwargs.get('watch')
+        self.truncate = kwargs.get('truncate')
         self.color_enabled = kwargs.get('color_enabled')
         self.output_stream_enabled = kwargs.get('output_stream_enabled')
         self.output_group_enabled = kwargs.get('output_group_enabled')
@@ -228,10 +229,6 @@ class AWSLogs(object):
 
                 # Strip any tail line feeds
                 message = event['message'].rstrip("\r\n")
-                if self.highlight:
-                    for value in self.highlight:
-                        if value and not value.isspace():
-                            message = message.replace(value, self.color(value, 'blue', 'on_yellow'))
                 output = []
                 if self.output_group_enabled:
                     output.append(
@@ -262,6 +259,19 @@ class AWSLogs(object):
                             'blue'
                         )
                     )
+                if self.truncate:
+                    # Replace tabs and line feeds with spaces so we can calculate real length
+                    message = message.replace('\t', '     ').replace('\r', '').replace('\n', ' ')
+                    s = self.getTerminalSize()
+                    # Find the length of the pefixed log info
+                    ps = len(' '.join(output))
+                    # Calculate what to truncate from message as long as prefix is not longer than current term column length
+                    ts = (s[0] - ps) - 4 if ps < s[0] else (ps + len(message) + 1)
+                    message = message[:ts] + (message[ts:] and '...')
+                if self.highlight:
+                    for value in self.highlight:
+                        if value and not value.isspace():
+                            message = message.replace(value, self.color(value, 'blue', 'on_yellow'))
 
                 output.append(message)
                 print(' '.join(output))
@@ -390,3 +400,80 @@ class AWSLogs(object):
                 raise exceptions.UnknownDateError(datetime_text)
 
         return int(total_seconds(date - datetime(1970, 1, 1))) * 1000
+
+    def getTerminalSize(self):
+       import platform
+       current_os = platform.system()
+       tuple_xy=None
+       if current_os == 'Windows':
+           tuple_xy = self._getTerminalSize_windows()
+           if tuple_xy is None:
+              tuple_xy = self._getTerminalSize_tput()
+              # needed for window's python in cygwin's xterm!
+       if current_os == 'Linux' or current_os == 'Darwin' or  current_os.startswith('CYGWIN'):
+           tuple_xy = self._getTerminalSize_linux()
+       if tuple_xy is None:
+           tuple_xy = (80, 25)      # default value
+       return tuple_xy
+
+    def _getTerminalSize_windows(self):
+        res=None
+        try:
+            from ctypes import windll, create_string_buffer
+
+            # stdin handle is -10
+            # stdout handle is -11
+            # stderr handle is -12
+
+            h = windll.kernel32.GetStdHandle(-12)
+            csbi = create_string_buffer(22)
+            res = windll.kernel32.GetConsoleScreenBufferInfo(h, csbi)
+        except:
+            return None
+        if res:
+            import struct
+            (bufx, bufy, curx, cury, wattr,
+             left, top, right, bottom, maxx, maxy) = struct.unpack("hhhhHhhhhhh", csbi.raw)
+            sizex = right - left + 1
+            sizey = bottom - top + 1
+            return sizex, sizey
+        else:
+            return None
+
+    def _getTerminalSize_tput(self):
+        # get terminal width
+        # src: http://stackoverflow.com/questions/263890/how-do-i-find-the-width-height-of-a-terminal-window
+        try:
+           import subprocess
+           proc=subprocess.Popen(["tput", "cols"],stdin=subprocess.PIPE,stdout=subprocess.PIPE)
+           output=proc.communicate(input=None)
+           cols=int(output[0])
+           proc=subprocess.Popen(["tput", "lines"],stdin=subprocess.PIPE,stdout=subprocess.PIPE)
+           output=proc.communicate(input=None)
+           rows=int(output[0])
+           return (cols,rows)
+        except:
+           return None
+
+    def _getTerminalSize_linux(self):
+        def ioctl_GWINSZ(fd):
+            try:
+                import fcntl, termios, struct, os
+                cr = struct.unpack('hh', fcntl.ioctl(fd, termios.TIOCGWINSZ,'1234'))
+            except:
+                return None
+            return cr
+        cr = ioctl_GWINSZ(0) or ioctl_GWINSZ(1) or ioctl_GWINSZ(2)
+        if not cr:
+            try:
+                fd = os.open(os.ctermid(), os.O_RDONLY)
+                cr = ioctl_GWINSZ(fd)
+                os.close(fd)
+            except:
+                pass
+        if not cr:
+            try:
+                cr = (env['LINES'], env['COLUMNS'])
+            except:
+                return None
+        return int(cr[1]), int(cr[0])
